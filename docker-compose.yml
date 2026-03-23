@@ -1,0 +1,70 @@
+services:
+
+  # =============================================================================
+  # BACKEND API SERVICE
+  # =============================================================================
+  scheduler-api:
+    image: registry.alpha5.finance/backend/scheduler-api:latest
+    environment:
+      # Database Configuration
+      - DATABASE_URL=postgresql://markets:p0w3rb4r@postgres.alpha5.finance:5432/markets_prod
+      - POSTGRES_HOST=postgres.alpha5.finance
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=markets_prod
+      - POSTGRES_USER=markets
+      - POSTGRES_PASSWORD=p0w3rb4r
+      
+      # Redis Configuration
+      - REDIS_HOST=redis.alpha5.finance
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=2
+      
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8001
+      - CORS_ORIGINS=http://localhost:3000,http://scheduler-frontend:3000,http://192.168.10.32:3000
+      
+      # Scheduler Configuration
+      - SCHEDULER_TIMEZONE=America/New_York
+      - MAX_CONCURRENT_TASKS=100
+      - TASK_TIMEOUT=300
+      
+      # Security
+      - SECRET_KEY=your-super-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+      
+      # Logging
+      - LOG_LEVEL=INFO
+      - TZ=America/New_York
+    ports:
+      - "8001:8001"
+    command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+    networks:
+      - scheduler-network
+    restart: unless-stopped
+  # =============================================================================
+  # FRONTEND SERVICE
+  # =============================================================================
+  scheduler-frontend:
+    image: registry.alpha5.finance/backend/scheduler-frontend:latest
+    environment:
+      - REACT_APP_API_URL=http://192.168.10.32:8001
+      - REACT_APP_WS_URL=ws://192.168.10.32:8001/ws
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    command: ["npm", "start"]
+    depends_on:
+      - scheduler-api
+    networks:
+      - scheduler-network
+    restart: unless-stopped
+networks:
+  scheduler-network:
+    driver: bridge
+
+ 
+  

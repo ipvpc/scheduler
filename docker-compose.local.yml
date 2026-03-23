@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: scheduler-postgres
+    environment:
+      POSTGRES_DB: markets_prod
+      POSTGRES_USER: markets
+      POSTGRES_PASSWORD: p0w3rb4r
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - scheduler-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U markets -d markets_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: scheduler-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - scheduler-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  # =============================================================================
+  # BACKEND API SERVICE
+  # =============================================================================
+  scheduler-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scheduler-api
+    environment:
+      # Database Configuration
+      - DATABASE_URL=postgresql://markets:p0w3rb4r@postgres:5432/markets_prod
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=markets_prod
+      - POSTGRES_USER=markets
+      - POSTGRES_PASSWORD=p0w3rb4r
+      
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8001
+      - CORS_ORIGINS=http://localhost:3001,http://scheduler-frontend:3001
+      
+      # Scheduler Configuration
+      - SCHEDULER_TIMEZONE=America/New_York
+      - MAX_CONCURRENT_TASKS=100
+      - TASK_TIMEOUT=300
+      
+      # Security
+      - SECRET_KEY=your-super-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+      
+      # Logging
+      - LOG_LEVEL=INFO
+      - TZ=America/New_York
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - scheduler-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+
+  # =============================================================================
+  # FRONTEND SERVICE
+  # =============================================================================
+  scheduler-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: scheduler-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8001
+      - REACT_APP_WS_URL=ws://localhost:8001/ws
+      - NODE_ENV=development
+    ports:
+      - "3001:3001"
+    networks:
+      - scheduler-network
+    depends_on:
+      scheduler-api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: ["npm", "start"]
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  scheduler-network:
+    driver: bridge
