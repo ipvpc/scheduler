@@ -40,8 +40,8 @@ except Exception as e:
 if %errorlevel% neq 0 (
     echo ❌ PostgreSQL connection failed
     echo.
-    echo 🔧 Check if postgres.alpha5.finance is accessible
-    echo Check network connectivity: docker-compose exec scheduler-api ping postgres.alpha5.finance
+    echo 🔧 Check if POSTGRES_HOST from your environment is reachable from the API container
+    echo Try: docker-compose exec scheduler-api ping YOUR_DB_HOST
     exit /b 1
 )
 
@@ -62,8 +62,8 @@ except Exception as e:
 if %errorlevel% neq 0 (
     echo ❌ Redis connection failed
     echo.
-    echo 🔧 Check if redis.alpha5.finance is accessible
-    echo Check network connectivity: docker-compose exec scheduler-api ping redis.alpha5.finance
+    echo 🔧 Check if REDIS_HOST from your environment is reachable from the API container
+    echo Try: docker-compose exec scheduler-api ping YOUR_REDIS_HOST
     exit /b 1
 )
 
@@ -100,7 +100,7 @@ echo ✅ All remote services tests passed!
 echo.
 echo 🌐 Architecture Summary:
 echo    - Frontend → scheduler-api:8001 (Docker service name)
-echo    - API → postgres.alpha5.finance:5432 (Remote PostgreSQL)
-echo    - API → redis.alpha5.finance:6379 (Remote Redis)
+echo    - API → PostgreSQL (host/port from DATABASE_URL / POSTGRES_HOST)
+echo    - API → Redis (REDIS_HOST:REDIS_PORT)
 echo.
 echo 🎉 Services are properly communicating with remote infrastructure!

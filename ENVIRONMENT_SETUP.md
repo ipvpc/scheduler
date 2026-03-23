@@ -28,12 +28,12 @@ The backend uses the `local.env` file for all configuration variables:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://markets:p0w3rb4r@localhost:5432/markets_prod
+DATABASE_URL=postgresql://markets:changeme@localhost:5432/markets_prod
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=markets_prod
 POSTGRES_USER=markets
-POSTGRES_PASSWORD=p0w3rb4r
+POSTGRES_PASSWORD=changeme
 
 # Redis Configuration
 REDIS_HOST=localhost
@@ -69,7 +69,7 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=markets_prod
 POSTGRES_USER=markets
-POSTGRES_PASSWORD=p0w3rb4r
+POSTGRES_PASSWORD=changeme
 
 # Connection Pool Settings
 DB_POOL_SIZE=10
@@ -201,8 +201,8 @@ REACT_APP_ENABLE_HOT_RELOAD=true
 ### 10. External Services
 ```bash
 # Alpaca API Configuration
-ALPACA_API_KEY=PKURKFASXB04JMSMLTGX
-ALPACA_SECRET_KEY=noh5VrukdfEzlPfRczkJ6ukU5tIMc5jG4eNhOP8c
+ALPACA_API_KEY=
+ALPACA_SECRET_KEY=
 ALPACA_API_URL=https://paper-api.alpaca.markets
 ALPACA_WS_URL=wss://stream.data.alpaca.markets/v2/iex
 
@@ -341,7 +341,7 @@ docker-compose logs -f scheduler-api
 services:
   scheduler-api:
     environment:
-      - DATABASE_URL=postgresql://markets:p0w3rb4r@postgres:5432/markets_prod
+      - DATABASE_URL=postgresql://markets:changeme@postgres:5432/markets_prod
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - SCHEDULER_TIMEZONE=America/New_York

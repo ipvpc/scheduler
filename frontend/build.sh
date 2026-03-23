@@ -1,1 +1,2 @@
-sudo docker build -t registry.alpha5.finance/trade-system/scheduler:latest  . --push
+REGISTRY="${REGISTRY:-registry.example.com/your-org}"
+sudo docker build -t "${REGISTRY}/scheduler:latest" . --push

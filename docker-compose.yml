@@ -4,18 +4,18 @@ services:
   # BACKEND API SERVICE
   # =============================================================================
   scheduler-api:
-    image: registry.alpha5.finance/backend/scheduler-api:latest
+    image: ${SCHEDULER_API_IMAGE:-scheduler-api:latest}
     environment:
-      # Database Configuration
-      - DATABASE_URL=postgresql://markets:p0w3rb4r@postgres.alpha5.finance:5432/markets_prod
-      - POSTGRES_HOST=postgres.alpha5.finance
+      # Database Configuration (override via .env / docker.env — no secrets in compose)
+      - DATABASE_URL=${DATABASE_URL:-postgresql://markets:changeme@db.example.com:5432/markets_prod}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db.example.com}
       - POSTGRES_PORT=5432
       - POSTGRES_DB=markets_prod
       - POSTGRES_USER=markets
-      - POSTGRES_PASSWORD=p0w3rb4r
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
       
       # Redis Configuration
-      - REDIS_HOST=redis.alpha5.finance
+      - REDIS_HOST=${REDIS_HOST:-redis.example.com}
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_DB=2
@@ -23,7 +23,7 @@ services:
       # API Configuration
       - API_HOST=0.0.0.0
       - API_PORT=8001
-      - CORS_ORIGINS=http://localhost:3000,http://scheduler-frontend:3000,http://192.168.10.32:3000
+      - CORS_ORIGINS=http://localhost:3000,http://scheduler-frontend:3000
       
       # Scheduler Configuration
       - SCHEDULER_TIMEZONE=America/New_York
@@ -47,10 +47,10 @@ services:
   # FRONTEND SERVICE
   # =============================================================================
   scheduler-frontend:
-    image: registry.alpha5.finance/backend/scheduler-frontend:latest
+    image: ${SCHEDULER_FRONTEND_IMAGE:-scheduler-frontend:latest}
     environment:
-      - REACT_APP_API_URL=http://192.168.10.32:8001
-      - REACT_APP_WS_URL=ws://192.168.10.32:8001/ws
+      - REACT_APP_API_URL=http://localhost:8001
+      - REACT_APP_WS_URL=ws://localhost:8001/ws
       - NODE_ENV=development
       - HOST=0.0.0.0
       - PORT=3000

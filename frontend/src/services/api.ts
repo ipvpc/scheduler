@@ -28,7 +28,7 @@ const getApiBaseUrl = () => {
   if (envUrl && envUrl.startsWith('https://')) {
     return envUrl;
   }
-  return 'https://scheduler.alpha5.finance';
+  return process.env.REACT_APP_API_URL || 'http://localhost:8001';
 };
 
 const API_BASE_URL = getApiBaseUrl();

@@ -13,8 +13,8 @@ Your scheduler system uses a **hybrid architecture** with:
 │   Frontend      │    │   API Service   │    │   Remote        │
 │   Container     │───▶│   Container     │───▶│   Services      │
 │                 │    │                 │    │                 │
-│ scheduler-      │    │ scheduler-api    │    │ postgres.       │
-│ frontend        │    │                 │    │ alpha5.finance  │
+│ scheduler-      │    │ scheduler-api    │    │ PostgreSQL      │
+│ frontend        │    │                 │    │ (your host)     │
 │                 │    │                 │    │                 │
 │ Port: 3000      │    │ Port: 8001      │    │ Port: 5432      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
@@ -24,8 +24,8 @@ Your scheduler system uses a **hybrid architecture** with:
                        │   Remote        │
                        │   Services      │
                        │                 │
-                       │ redis.          │
-                       │ alpha5.finance  │
+                       │ Redis           │
+                       │ (your host)     │
                        │                 │
                        │ Port: 6379      │
                        └─────────────────┘
@@ -48,11 +48,11 @@ scheduler-frontend:
 scheduler-api:
   environment:
     # Remote PostgreSQL
-    - DATABASE_URL=postgresql://markets:p0w3rb4r@postgres.alpha5.finance:5432/markets_prod
-    - POSTGRES_HOST=postgres.alpha5.finance
+    - DATABASE_URL=postgresql://markets:changeme@db.example.com:5432/markets_prod
+    - POSTGRES_HOST=db.example.com
     
     # Remote Redis
-    - REDIS_HOST=redis.alpha5.finance
+    - REDIS_HOST=redis.example.com
     - REDIS_PORT=6379
 ```
 
@@ -67,8 +67,8 @@ scheduler-api:
 - **Frontend (from host)**: http://localhost:3000
 - **API (from host)**: http://localhost:8001
 - **Frontend → API (internal)**: http://scheduler-api:8001
-- **API → PostgreSQL (external)**: postgres.alpha5.finance:5432
-- **API → Redis (external)**: redis.alpha5.finance:6379
+- **API → PostgreSQL (external)**: host and port from `DATABASE_URL` / `POSTGRES_HOST`
+- **API → Redis (external)**: `REDIS_HOST`:`REDIS_PORT`
 
 ## 🚀 **Quick Start Commands**
 
@@ -102,7 +102,7 @@ curl http://localhost:8001/api/tasks
    - Verify `REACT_APP_API_URL=http://scheduler-api:8001`
 
 2. **API can't reach remote services**
-   - Check network connectivity: `ping postgres.alpha5.finance`
+   - Check network connectivity to your configured `POSTGRES_HOST`
    - Verify credentials and connection strings
 
 3. **Database enum errors**
@@ -119,8 +119,8 @@ docker-compose logs scheduler-api
 docker-compose logs scheduler-frontend
 
 # Test network connectivity
-docker-compose exec scheduler-api ping postgres.alpha5.finance
-docker-compose exec scheduler-api ping redis.alpha5.finance
+docker-compose exec scheduler-api ping YOUR_DB_HOST
+docker-compose exec scheduler-api ping YOUR_REDIS_HOST
 
 # Test database connection
 docker-compose exec scheduler-api python -c "import psycopg2; print('DB OK')"

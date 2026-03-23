@@ -1,0 +1,5 @@
+# Local secrets — keep out of version control
+.env
+local.env
+docker.env
+frontend/local.env

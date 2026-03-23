@@ -15,15 +15,30 @@ elif os.path.exists('.env'):
 else:
     print("No environment file found, using system environment variables")
 
-# Database configuration with fallback
+# Database configuration with fallback (no credentials in source — set DATABASE_URL)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    # Fallback to default if DATABASE_URL is not set
-    DATABASE_URL = "postgresql://markets:p0w3rb4r@postgres.alpha5.finance:5432/markets_prod"
-    print(f"Warning: DATABASE_URL not found in environment, using default: {DATABASE_URL}")
+    DATABASE_URL = "postgresql://markets:changeme@localhost:5432/markets_prod"
+    print(
+        "Warning: DATABASE_URL not set; using local dev default "
+        "(postgresql://markets:***@localhost:5432/markets_prod). "
+        "Set DATABASE_URL for your environment."
+    )
 
-print(f"Using DATABASE_URL: {DATABASE_URL}")
+
+def _redact_db_url(url: str) -> str:
+    import urllib.parse
+
+    parsed = urllib.parse.urlparse(url)
+    user = parsed.username or ""
+    host = parsed.hostname or ""
+    port = f":{parsed.port}" if parsed.port else ""
+    path = parsed.path or ""
+    return f"{parsed.scheme}://{user}:***@{host}{port}{path}"
+
+
+print(f"Using DATABASE_URL: {_redact_db_url(DATABASE_URL)}")
 
 # Parse database URL
 def parse_database_url(url):

@@ -97,7 +97,7 @@ A professional-grade scheduled API call management system designed for hedge fun
 
 4. **Set environment variables**:
    ```bash
-   export DATABASE_URL="postgresql://markets:p0w3rb4r@localhost:5432/markets_prod"
+   export DATABASE_URL="postgresql://markets:changeme@localhost:5432/markets_prod"
    export REDIS_HOST="localhost"
    export REDIS_PORT="6379"
    ```
@@ -282,7 +282,7 @@ scheduler-api:
   ports:
     - "8001:8001"
   environment:
-    DATABASE_URL: postgresql://markets:p0w3rb4r@postgres:5432/markets_prod
+    DATABASE_URL: postgresql://markets:changeme@postgres:5432/markets_prod
     REDIS_HOST: redis
     REDIS_PORT: 6379
   depends_on:
